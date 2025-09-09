@@ -1,0 +1,45 @@
+name: CSV to Google Sheets
+
+# Déclencheurs
+on:
+  workflow_dispatch:   # Lancer manuellement depuis GitHub
+  push:
+    paths:
+      - 'csv_to_process/*.csv'  # Déclenche si un CSV est ajouté ou modifié
+
+jobs:
+  process_csv:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout du repo
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2️⃣ Setup Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      # 3️⃣ Installer les dépendances
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install gspread oauth2client
+
+      # 4️⃣ Copier le service account
+      - name: Copy service account
+        run: |
+          mkdir -p $HOME/.credentials
+          cp quiet-dimension-439818-i9-c3a6abf66224.json $HOME/.credentials/service_account.json
+
+      # 5️⃣ Transcription du CSV
+      - name: Run transcription script
+        run: |
+          python dictoinaire_essono_pichon_csv.py
+
+      # 6️⃣ Append vers Google Sheets
+      - name: Append to Google Sheets
+        run: |
+          python append_to_sheets.py
