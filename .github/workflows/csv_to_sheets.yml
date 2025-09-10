@@ -1,8 +1,7 @@
 name: CSV to Google Sheets
 
-# Déclencheurs
 on:
-  workflow_dispatch:   # Lancer manuellement depuis GitHub
+  workflow_dispatch:     # Peut être lancé manuellement
   push:
     paths:
       - 'csv_to_process/*.csv'  # Déclenche si un CSV est ajouté ou modifié
@@ -28,11 +27,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install gspread oauth2client
 
-      # 4️⃣ Copier le service account
-      - name: Copy service account
+      # 4️⃣ Recréer le service account depuis le secret
+      - name: Setup GCP Service Account
         run: |
           mkdir -p $HOME/.credentials
-          cp quiet-dimension-439818-i9-c3a6abf66224.json $HOME/.credentials/service_account.json
+          echo "$GCP_SERVICE_ACCOUNT" > $HOME/.credentials/service_account.json
+        env:
+          GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       # 5️⃣ Transcription du CSV
       - name: Run transcription script
